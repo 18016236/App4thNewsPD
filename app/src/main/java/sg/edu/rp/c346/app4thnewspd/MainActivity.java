@@ -1,11 +1,15 @@
 package sg.edu.rp.c346.app4thnewspd;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -37,7 +41,7 @@ import retrofit2.Response;
 import sg.edu.rp.c346.app4thnewspd.Model.Articles;
 import sg.edu.rp.c346.app4thnewspd.Model.Headlines;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     RecyclerView recyclerView;
     SwipeRefreshLayout swipeRefreshLayout;
@@ -50,8 +54,11 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;
-    private  Switch btnSwitch;
-
+    Switch btnSwitch;
+    private NavigationView nv;
+    Fragment fragment;
+    FragmentManager fragmentManager;
+    FragmentTransaction fragmentTransaction;
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -66,23 +73,45 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        btnSwitch = findViewById(R.id.btnSwitch);
+        drawer = findViewById(R.id.drawer);
+        
+        toggle = new ActionBarDrawerToggle(this,drawer,toolbar,R.string.open,R.string.close);
+        drawer.addDrawerListener(toggle);
+        toggle.setDrawerIndicatorEnabled(true);
+        toggle.syncState();
+
+
+        nv = (NavigationView)findViewById(R.id.navi_view);
+
+
+        Menu menu = nv.getMenu();
+        MenuItem menuItem = menu.findItem(R.id.Mode);
+        View actionView = MenuItemCompat.getActionView(menuItem);
+
+        btnSwitch =(Switch)actionView.findViewById(R.id.btnSwitch);
         if(AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES){
             btnSwitch.setChecked(true);
         }
 
 
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-
-
-        drawer = findViewById(R.id.drawer);
-        toggle = new ActionBarDrawerToggle(this,drawer,toolbar,R.string.open,R.string.close);
-        drawer.addDrawerListener(toggle);
-        toggle.setDrawerIndicatorEnabled(true);
-        toggle.syncState();
+        btnSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked)
+                {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    restartActivity();
+                }
+                else
+                {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    restartActivity();
+                }
+            }
+        });
 
 
         swipeRefreshLayout = findViewById(R.id.swipeRefresh);
@@ -131,9 +160,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
     private void restartActivity() {
         Intent i = new Intent(getApplicationContext(),MainActivity.class);
         startActivity(i);
@@ -179,5 +205,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        return false;
     }
 }
